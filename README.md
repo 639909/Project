@@ -1,5 +1,6 @@
 Unit Clause Propagation in C++11
-=======
+=====
+
 
 Unit clause propagation algorithm for 4th year MEng project written in C++11
 
@@ -29,3 +30,10 @@ c Solution: 1
 The solution line will show each solution that had been found while propagating the file.
 
 This code is still a work in progress, and is being updated as much as possible for submission in June.
+
+###Known Bugs
+
+clauseVector inputs an empty element for every comment or problem line
+
+Not every unit clause is detected on first run, multiple runs needed
+
