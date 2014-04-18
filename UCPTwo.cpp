@@ -6,10 +6,11 @@
 #include <sstream>
 
 int main(int argc, char *argv[]) {
+  //input
   std::set<int> clause;
   std::vector<std::set<int> > clauseVector;
   std::vector<std::string> commentsVector, problemVector;
-  std::ifstream inFile("in.txt");
+  std::ifstream inFile("in.cnf");
   std::string currentClause;
   while (std::getline(inFile, currentClause)){
 	std::istringstream iss(currentClause);
@@ -28,6 +29,7 @@ int main(int argc, char *argv[]) {
         clause.clear();
      }
   }
+  //processing
   std::set<int> tempSet;
   int propagator = 0;
   for(auto clause : clauseVector){
@@ -44,12 +46,12 @@ int main(int argc, char *argv[]) {
     tempSet.clear();
     propagator = 0;
   }
-std::ofstream outFile("in.txt");
-for(std::set<int> const &mySet : clauseVector){
-  for(const int i : mySet){
-    outFile << i << " ";
-  }
+  //output
+  std::ofstream outFile("in.cnf");
+  for(std::set<int> const &mySet : clauseVector){
+    for(const int i : mySet){
+      outFile << i << " ";
+    }
   outFile << "0" <<"\n";
-}
-
+  }
 }
