@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
   std::set<int> clause;
   std::vector<std::set<int> > clauseVector;
   std::vector<std::string> commentsVector, problemVector;
-  std::ifstream inFile("input.txt");
+  std::ifstream inFile("in.txt");
   std::string currentClause;
   while (std::getline(inFile, currentClause)){
 	std::istringstream iss(currentClause);
@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) {
 	  if (variable != 0)
 	    clause.insert(variable);
       if (variable == 0){
-	    clause.insert(variable);
 	    clauseVector.push_back(clause);
         clause.clear();
      }
@@ -37,8 +36,20 @@ int main(int argc, char *argv[]) {
     if(tempSet.size() == 1)
       for(const int i : clause)
 	    propagator = i;
-	if(propagator!= 0)
+	if(propagator!= 0){
+      auto iter = std::remove_if( clauseVector.begin(), clauseVector.end(),[propagator] ( const std::set<int>& s ){ 
+	    return s.find(propagator) != s.end() ; } ) ;
+      clauseVector.erase( iter, clauseVector.end() ) ;
+    }
     tempSet.clear();
     propagator = 0;
   }
+std::ofstream outFile("in.txt");
+for(std::set<int> const &mySet : clauseVector){
+  for(const int i : mySet){
+    outFile << i << " ";
+  }
+  outFile << "0" <<"\n";
+}
+
 }
