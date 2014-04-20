@@ -5,13 +5,14 @@
 #include <string>
 #include <sstream>
 #include <ctime>
+#include <algorithm>
 
 int main(const int argc, char *argv[]) {
   //input
   if (argc!=2){
-	std::cout << "Usage: ./UCP <Input File>";
+	std::cout << "Usage: ./UCP <Input File> \n";
 	return 0;
-  }
+}
   std::set<int> clause;
   std::vector<std::set<int> > clauseVector;
   std::vector<std::string> commentsVector;
@@ -37,9 +38,8 @@ int main(const int argc, char *argv[]) {
   int variableCount, clauseCount;
   problem.erase (0,6);
   std::stringstream str(problem);
-  str >> variableCount >> clauseCount; 
+  str >> variableCount >> clauseCount;
   std::cout << "Variables: " << variableCount << " Clauses: " << clauseCount;
-
   int commentCount = commentsVector.size() +1;
   clauseVector.erase(clauseVector.begin(),clauseVector.begin() + commentCount);
   //processing
@@ -52,7 +52,7 @@ int main(const int argc, char *argv[]) {
       for(const int i : clause)
 	    propagator = i;
 	if(propagator!= 0){
-      auto iter = std::remove_if( clauseVector.begin(), clauseVector.end(),[propagator] ( const std::set<int>& i ){ 
+    auto iter = std::remove_if( clauseVector.begin(), clauseVector.end(),[propagator] ( const std::set<int>& i ){
 	    return i.find(propagator) != i.end() ; } ) ;
       clauseVector.erase( iter, clauseVector.end() ) ;
     int secondPropagator;
@@ -64,12 +64,11 @@ int main(const int argc, char *argv[]) {
     }
     tempSet.clear();
     propagator = 0;
-  }
   //output
   std::set<int> clauseCountV;
   time_t now = time(0);
   char* dt = ctime(&now);
-  std::ofstream outFile("out.cnf");
+  std::ofstream outFile("out.txt");
   for (const auto &comments : commentsVector)
       outFile << comments << "\n";
   outFile << "c This file was propagated on the " << dt;
@@ -77,7 +76,6 @@ int main(const int argc, char *argv[]) {
     for(const int i : mySet)
 	  clauseCountV.insert(i);
   outFile << "p cnf " << clauseCountV.size() << " " << clauseVector.size() <<  "\n";
-
   for(std::set<int> const &mySet : clauseVector){
     for(const int i : mySet){
       outFile << i << " ";
