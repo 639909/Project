@@ -42,8 +42,11 @@ int main(const int argc, char *argv[]) {
   }
   int commentCount = commentsVector.size() + 1;
   clauseVector.erase(clauseVector.begin(), clauseVector.begin() + commentCount);
-  int propagator = 0;
+  //Calculating variable and clause count
+  std::set<int> variableCount;
+  variableCount.clear();
   //Finding the propagator
+  int propagator = 0;
   for(auto iter = std::begin(clauseVector) ; iter != std::end(clauseVector);){
     const auto& currentClauseSet = *iter;
       if(currentClauseSet.size() == 0)
@@ -72,8 +75,14 @@ int main(const int argc, char *argv[]) {
   std::ofstream outFile("out.txt");
   for (const auto &comments : commentsVector)
       outFile << comments << "\n";
-  outFile << "p cnf " << " int Count " << clauseVector.size() << "\n";
-  for(std::set<int> const &printSet : clauseVector){
+  time_t now = time(0);
+  char* dt = ctime(&now);
+  outFile << "c This file was propagated on " << dt;
+  for(const auto &countVariable : clauseVector)
+    for(const int i : countVariable)
+      variableCount.insert(i);
+  outFile << "p cnf " << variableCount.size() << " " << clauseVector.size() << "\n";
+  for(const auto &printSet : clauseVector){
     for(const int i : printSet){
       outFile << i << " ";
     }
