@@ -50,24 +50,24 @@ int main(const int argc, char *argv[]) {
   for(auto iter = std::begin(clauseVector) ; iter != std::end(clauseVector);){
     const auto& currentClauseSet = *iter;
       if(currentClauseSet.size() == 0)
-        propagator = 0;
+        clauseVector.erase( iter, clauseVector.end() );
       if(currentClauseSet.size() == 1)
         for(const int j : currentClauseSet){
           propagator = j;
-          std::cout << "propagator = "<< propagator << "\n";
+          std::cout << "propagator = " << propagator << "\n";
         //Processing
         if(propagator != 0){
           auto iter = std::remove_if( clauseVector.begin(), clauseVector.end(),[propagator] ( const std::set<int>& i ){
             return i.find(propagator) != i.end() ; } ) ;
           clauseVector.erase( iter, clauseVector.end() ) ;
-          int secondPropagator = 0;
-          if (propagator >0)
+          int secondPropagator;
+          if (propagator > 0)
             secondPropagator = -abs(propagator);
           else if (propagator < 0)
             secondPropagator = abs(propagator);
           std::for_each(clauseVector.begin(), clauseVector.end(), [&](std::set<int>& s){s.erase(secondPropagator);});
         }
-        iter = iter - 1;
+        iter = clauseVector.begin() - 1;
       }
       iter++;
     }
