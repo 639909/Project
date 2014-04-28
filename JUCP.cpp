@@ -9,15 +9,17 @@
 
 int main(const int argc, char *argv[]) {
   //input
+  if (argc != 2){
+	std::cout << "--Usage: ./UCP <Input File> \n";
+	exit (1);
+  }
   std::string inFileString = argv[1];
-  if (argc!=2){
-	std::cout << "Usage: ./UCP <Input File>";
-	return 0;
-  }
   if (inFileString.find(".cnf") == std::string::npos){
-    std::cout << "Error: Wrong file extension \n";
-    //return 0;
+    std::cout << "--Error: Wrong file extension \n--Input file should be in .cnf Dimacs format \n";
+  //  exit (1);
   }
+  clock_t t1, t2;
+  t1 = clock();
   std::set<int> clause;
   std::vector<std::set<int> > clauseVector;
   std::vector<std::string> commentsVector;
@@ -37,24 +39,24 @@ int main(const int argc, char *argv[]) {
 	    clause.insert(variable);
       if (variable == 0){
 	    clauseVector.push_back(clause);
-        clause.clear();
+      clause.clear();
      }
   }
   int commentCount = commentsVector.size() + 1;
   clauseVector.erase(clauseVector.begin(), clauseVector.begin() + commentCount);
   //Calculating variable and clause count
   std::set<int> variableCount;
-  variableCount.clear();
   //Finding the propagator
   int propagator = 0;
-  for(auto iter = std::begin(clauseVector) ; iter != std::end(clauseVector);){
-    const auto& currentClauseSet = *iter;
+  for(auto iterator = std::begin(clauseVector) ; iterator != std::end(clauseVector);){
+    const auto& currentClauseSet = *iterator;
       if(currentClauseSet.size() == 0)
-        clauseVector.erase( iter, clauseVector.end() );
+        clauseVector.erase( iterator, clauseVector.end() );
       if(currentClauseSet.size() == 1)
         for(const int j : currentClauseSet){
           propagator = j;
-          std::cout << "propagator = " << propagator << "\n";
+          //std::cout << "propagator = " << propagator << "\n";
+        }
         //Processing
         if(propagator != 0){
           auto iter = std::remove_if( clauseVector.begin(), clauseVector.end(),[propagator] ( const std::set<int>& i ){
@@ -66,10 +68,10 @@ int main(const int argc, char *argv[]) {
           else if (propagator < 0)
             secondPropagator = abs(propagator);
           std::for_each(clauseVector.begin(), clauseVector.end(), [&](std::set<int>& s){s.erase(secondPropagator);});
+          iterator = clauseVector.begin() -1;
         }
-        iter = clauseVector.begin() - 1;
-      }
-      iter++;
+        propagator = 0;
+      iterator++;
     }
   //output
   std::ofstream outFile("out.txt");
@@ -79,8 +81,13 @@ int main(const int argc, char *argv[]) {
   char* dt = ctime(&now);
   outFile << "c This file was propagated on " << dt;
   for(const auto &countVariable : clauseVector)
-    for(const int i : countVariable)
-      variableCount.insert(i);
+    for(const int i : countVariable){
+      int positiveVariable;
+      if (i < 0) positiveVariable = abs(i);
+      else positiveVariable = i;
+      variableCount.insert(positiveVariable);
+
+    }
   outFile << "p cnf " << variableCount.size() << " " << clauseVector.size() << "\n";
   for(const auto &printSet : clauseVector){
     for(const int i : printSet){
@@ -88,4 +95,8 @@ int main(const int argc, char *argv[]) {
     }
   outFile << "0" <<"\n";
   }
+  t2 = clock();
+  float seconds = floorf(((((float)t2 - (float)t1)/CLOCKS_PER_SEC) *100) /100);
+
+  std::cout << " Time = " << seconds << " Secodns \n";
 }
