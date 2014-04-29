@@ -8,7 +8,6 @@
 #include <algorithm>
 
 int main(const int argc, char *argv[]) {
-  //input
   if (argc != 2){
 	  std::cout << "--  Usage: ./UCP <Input File> \n";
 	  exit (1);
@@ -56,9 +55,7 @@ int main(const int argc, char *argv[]) {
   std::cout << "-- Initial Variable Count on Problem Line            " << initianVariableCount << "\n";
   std::cout << "-- Initial Clause Count on Problem Line              " << initialClauseCount << "\n";
   std::cout << "-- Input File                                        " << argv[1] << "\n";
-  //Calculating variable and clause count
   std::set<int> variableCount;
-  //Finding the propagator
   std::vector<int> propagators;
   int propagator = 0;
   for(auto iterator = std::begin(clauseVector) ; iterator != std::end(clauseVector);){
@@ -69,9 +66,7 @@ int main(const int argc, char *argv[]) {
         for(const int j : currentClauseSet){
           propagator = j;
           propagators.push_back(propagator);
-          //std::cout << "propagator = " << propagator << "\n";
         }
-        //Processing
         if(propagator != 0){
           auto iter = std::remove_if( clauseVector.begin(), clauseVector.end(),[propagator] ( const std::set<int>& i ){
             return i.find(propagator) != i.end() ; } ) ;
@@ -87,7 +82,6 @@ int main(const int argc, char *argv[]) {
       propagator = 0;
       iterator++;
     }
-  //output
   std::cout << "propagators = ";
   for (auto pr : propagators)
     std::cout << pr << ' ';
