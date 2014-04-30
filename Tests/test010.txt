@@ -1,0 +1,4 @@
+c comment line
+p cnf 2 2
+1 2 0
+1 0

@@ -1,0 +1,2 @@
+c test 4, one comment and problem line
+p cnf 0 0
