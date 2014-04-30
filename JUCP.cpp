@@ -47,7 +47,9 @@ int main(const int argc, char *argv[]) {
   }
   int commentCount = commentsVector.size() + 1;
   clauseVector.erase(clauseVector.begin(), clauseVector.begin() + commentCount);
-
+  int lastIndex = inFileString.find_last_of(".");
+  std::string fileName = inFileString.substr(0, lastIndex);
+  std::string outFileName = fileName + "-propagated.cnf";
   int initianVariableCount, initialClauseCount;
   problem.erase (0,6);
   std::stringstream str(problem);
@@ -55,6 +57,7 @@ int main(const int argc, char *argv[]) {
   std::cout << "-- Initial Variable Count on Problem Line            " << initianVariableCount << "\n";
   std::cout << "-- Initial Clause Count on Problem Line              " << initialClauseCount << "\n";
   std::cout << "-- Input File                                        " << argv[1] << "\n";
+  std::cout << "-- Output File                                       " << outFileName<< "\n";
   std::set<int> variableCount;
   std::vector<int> propagators;
   int propagator = 0;
@@ -86,7 +89,7 @@ int main(const int argc, char *argv[]) {
   for (auto pr : propagators)
     std::cout << pr << ' ';
   std::cout << "\n";
-  std::ofstream outFile("out.txt");
+  std::ofstream outFile(outFileName);
   for (const auto &comments : commentsVector)
       outFile << comments << "\n";
   time_t now = time(0);
