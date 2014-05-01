@@ -8,8 +8,12 @@
 #include <algorithm>
 
 int main(const int argc, char *argv[]) {
-  if (argc != 2){
-	  std::cout << "--  Usage: ./UCP <Input File> \n";
+  if (argc < 2){
+    std::cout << "-- Usage:\n";
+	  std::cout << "-- ./JUCP <Input File> \n";
+    std::cout << "    -- Runs solver with <Input File> then will output to <InputFile>-propagated.cnf\n";
+    std::cout << "-- ./JUCP <Input File>  <Output File> \n";
+    std::cout << "    -- Runs solver with <Input File> then Will output to <Output File>.cnf\n";
 	  exit (1);
   }
   std::string inFileString = argv[1];
@@ -47,9 +51,16 @@ int main(const int argc, char *argv[]) {
   }
   int commentCount = commentsVector.size() + 1;
   clauseVector.erase(clauseVector.begin(), clauseVector.begin() + commentCount);
-  int lastIndex = inFileString.find_last_of(".");
-  std::string fileName = inFileString.substr(0, lastIndex);
-  std::string outFileName = fileName + "-propagated.cnf";
+  std::string outFileName;
+  if (argc == 3){
+    std::string outPrefix = argv[2];
+    outFileName = outPrefix + ".cnf";
+  }
+  else {
+    int lastIndex = inFileString.find_last_of(".");
+    std::string fileName = inFileString.substr(0, lastIndex);
+    outFileName = fileName + "-propagated.cnf";
+  }
   int initianVariableCount, initialClauseCount;
   problem.erase (0,6);
   std::stringstream str(problem);
@@ -85,10 +96,11 @@ int main(const int argc, char *argv[]) {
       propagator = 0;
       iterator++;
     }
-  std::cout << "propagators = ";
+  std::cout << "-- Propagators = ";
   for (auto pr : propagators)
     std::cout << pr << ' ';
   std::cout << "\n";
+
   std::ofstream outFile(outFileName);
   for (const auto &comments : commentsVector)
       outFile << comments << "\n";
@@ -102,6 +114,7 @@ int main(const int argc, char *argv[]) {
       else positiveVariable = i;
       variableCount.insert(positiveVariable);
     }
+    
   outFile << "p cnf " << variableCount.size() << " " << clauseVector.size() << "\n";
   for(const auto &printSet : clauseVector){
     for(const int i : printSet){
