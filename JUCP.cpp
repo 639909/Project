@@ -10,6 +10,8 @@
 int main(const int argc, char *argv[]) {
   if (argc < 2){
     std::cout << "-- Usage:\n";
+    std::cout << "-- ./JUCP -v\n";
+    std::cout << "    -- Will show the current version of the software\n";
 	  std::cout << "-- ./JUCP <Input File> \n";
     std::cout << "    -- Runs solver with <Input File> then will output to <InputFile>-propagated.cnf\n";
     std::cout << "-- ./JUCP <Input File>  <Output File> \n";
@@ -17,6 +19,10 @@ int main(const int argc, char *argv[]) {
 	  exit (1);
   }
   std::string inFileString = argv[1];
+  if (inFileString == "-v"){
+    std::cout << "-- JUCP release version: 1.0 \n-- Github version: b64a24596426b52d7c03a7165aab2f4c3ff59d1a \n";
+    exit(1);
+  }
   if (inFileString.find(".cnf") == std::string::npos){
     std::cout << "-- Error: Wrong file extension \n-- Input file should be in .cnf Dimacs format \n";
     exit (1);
@@ -114,7 +120,7 @@ int main(const int argc, char *argv[]) {
       else positiveVariable = i;
       variableCount.insert(positiveVariable);
     }
-    
+
   outFile << "p cnf " << variableCount.size() << " " << clauseVector.size() << "\n";
   for(const auto &printSet : clauseVector){
     for(const int i : printSet){
@@ -124,5 +130,7 @@ int main(const int argc, char *argv[]) {
   }
   t2 = clock();
   float seconds = floorf(((((float)t2 - (float)t1)/CLOCKS_PER_SEC) *100) /100);
-  std::cout << "-- Time taken                                        " << seconds << " Seconds\n";;
+  std::cout << "-- Variables after propagation                       " << variableCount.size() << "\n";
+  std::cout << "-- Clauses after propagation                         " << clauseVector.size() << "\n";
+  std::cout << "-- Time taken                                        " << seconds << " Seconds\n";
 }
