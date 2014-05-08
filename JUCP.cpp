@@ -7,14 +7,20 @@
 #include <ctime>
 #include <algorithm>
 
-void printToScreen(int var, int clause, std::string inFile, std::string outFile, int varCount, int clauCount, int seconds){
+void printToScreen(int var, int clause, std::string inFile, std::string outFile, int varCount, int clauCount, int seconds, int variableCountActual, int actualClauseCount){
+  std::cout << "-------------------------------------------------------\n";
   std::cout << "-- Initial Variable Count on Problem Line            " << var << "\n";
+  if (var != variableCountActual)
+    std::cout << "      -- Actual Variable Count                       " << variableCountActual << "\n";
   std::cout << "-- Initial Clause Count on Problem Line              " << clause << "\n";
+  if (clause != actualClauseCount)
+    std::cout << "      -- Actual Clause Count                         " << actualClauseCount << "\n";
   std::cout << "-- Input File                                        " << inFile << "\n";
   std::cout << "-- Output File                                       " << outFile<< "\n";
   std::cout << "-- Variables after propagation                       " << varCount << "\n";
   std::cout << "-- Clauses after propagation                         " << clauCount << "\n";
   std::cout << "-- Time taken                                        " << seconds << " Seconds\n";
+  std::cout << "-------------------------------------------------------\n";
 }
 void noFile(){
   std::cout << "-- Usage:\n";
@@ -34,13 +40,24 @@ int inversePropagator(int propagator){
     secondPropagator = abs(propagator);
   return secondPropagator;
 }
+int countVariable(std::vector<std::set<int> > clauseVector, std::set<int> variableCount){
+  for(const auto &countVariable : clauseVector)
+    for(const int i : countVariable){
+      int positiveVariable;
+      if (i < 0) positiveVariable = abs(i);
+      else positiveVariable = i;
+      variableCount.insert(positiveVariable);
+    }
+    int variableCountInt = variableCount.size();
+    return variableCountInt;
+}
 
 int main(const int argc, char *argv[]) {
   if (argc < 2)
     noFile();
   std::string inFileString = argv[1];
   if (inFileString == "-v"){
-    std::cout << "-- JUCP release version: 1.0 \n-- Github version: b64a24596426b52d7c03a7165aab2f4c3ff59d1a \n";
+    std::cout << "-- JUCP release version: 1.0 \n-- Github version: 0a761f05e45b632fb1392382b846d62ba7c7bd78 \n";
     exit(1);
   }
   if (inFileString.find(".cnf") == std::string::npos){
@@ -53,7 +70,7 @@ int main(const int argc, char *argv[]) {
   std::vector<std::set<int> > clauseVector;
   std::vector<std::string> commentsVector;
   std::ifstream inFile (argv[1]);
-  std::string currentClause, problem;
+  std::string currentClause, problem, problemComment;
   while (std::getline(inFile, currentClause)){
 	std::istringstream iss(currentClause);
 	std::string c("c");
@@ -77,6 +94,7 @@ int main(const int argc, char *argv[]) {
   }
   int commentCount = commentsVector.size() + 1;
   clauseVector.erase(clauseVector.begin(), clauseVector.begin() + commentCount);
+  int actualClauseCount = clauseVector.size();
   std::string outFileName;
   if (argc == 3){
     std::string outPrefix = argv[2];
@@ -87,11 +105,13 @@ int main(const int argc, char *argv[]) {
     std::string fileName = inFileString.substr(0, lastIndex);
     outFileName = fileName + "-propagated.cnf";
   }
+  std::set<int> variableCount;
+  int variableCountActual = countVariable(clauseVector, variableCount);
   int initianVariableCount, initialClauseCount;
+  problemComment = problem;
   problem.erase (0,6);
   std::stringstream str(problem);
   str >> initianVariableCount >> initialClauseCount;
-  std::set<int> variableCount;
   std::vector<int> propagators;
   int propagator = 0;
   for(auto iterator = std::begin(clauseVector) ; iterator != std::end(clauseVector);){
@@ -107,16 +127,13 @@ int main(const int argc, char *argv[]) {
           auto iter = std::remove_if( clauseVector.begin(), clauseVector.end(),[propagator] ( const std::set<int>& i ){
             return i.find(propagator) != i.end() ; } ) ;
           clauseVector.erase( iter, clauseVector.end() ) ;
-
           int secondPropagator = inversePropagator(propagator);
-
           std::for_each(clauseVector.begin(), clauseVector.end(), [&](std::set<int>& s){s.erase(secondPropagator);});
           iterator = clauseVector.begin() -1;
         }
       propagator = 0;
       iterator++;
     }
-  std::cout << "-- Propagators = ";
   for (auto pr : propagators)
     std::cout << pr << ' ';
   std::cout << "\n";
@@ -126,14 +143,16 @@ int main(const int argc, char *argv[]) {
   time_t now = time(0);
   char* dt = ctime(&now);
   outFile << "c This file was propagated on " << dt;
-  for(const auto &countVariable : clauseVector)
-    for(const int i : countVariable){
-      int positiveVariable;
-      if (i < 0) positiveVariable = abs(i);
-      else positiveVariable = i;
-      variableCount.insert(positiveVariable);
+  outFile << "c Orginal problem line: " << problemComment << "\n";
+  outFile << "c Propagators: ";
+  for (int k = 0; k < propagators.size(); ++k){
+    outFile << propagators[k] << " ";
+    if ((k + 1) % 10 == 0){
+      outFile << "\nc Propagators: ";
     }
-  outFile << "p cnf " << variableCount.size() << " " << clauseVector.size() << "\n";
+  }
+  int variableCountInt = countVariable(clauseVector, variableCount);
+  outFile << "\np cnf " << variableCountInt << " " << clauseVector.size() << "\n";
   for(const auto &printSet : clauseVector){
     for(const int i : printSet){
       outFile << i << " ";
@@ -142,5 +161,5 @@ int main(const int argc, char *argv[]) {
   }
   t2 = clock();
   float seconds = floorf(((((float)t2 - (float)t1)/CLOCKS_PER_SEC) *100) /100);
-  printToScreen(initianVariableCount,initialClauseCount,argv[1], outFileName, variableCount.size(), clauseVector.size(), seconds);
+  printToScreen(initianVariableCount,initialClauseCount,argv[1], outFileName, variableCountInt, clauseVector.size(), seconds, variableCountActual, actualClauseCount);
 }
