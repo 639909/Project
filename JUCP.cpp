@@ -134,8 +134,6 @@ int main(const int argc, char *argv[]) {
       propagator = 0;
       iterator++;
     }
-  for (auto pr : propagators)
-    std::cout << pr << ' ';
   std::cout << "\n";
   std::ofstream outFile(outFileName);
   for (const auto &comments : commentsVector)
